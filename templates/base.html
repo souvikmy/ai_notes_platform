@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}NoteVerse — AI Notes Platform{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+{% block head %}{% endblock %}
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="nav-logo">
+    <span class="logo-icon">⚡</span>NoteVerse
+  </a>
+  <div class="nav-search" id="navSearch">
+    <input type="text" id="globalSearch" placeholder="Smart search with AI..." autocomplete="off"/>
+    <i class="fas fa-sparkles search-icon-ai"></i>
+    <div id="searchResults" class="search-dropdown"></div>
+  </div>
+  <div class="nav-actions">
+    {% if user %}
+      <a href="/feed" class="nav-link {% if request.path=='/feed' %}active{% endif %}">
+        <i class="fas fa-home"></i>
+      </a>
+      <a href="/upload" class="nav-btn-upload">
+        <i class="fas fa-plus"></i> Upload
+      </a>
+      <a href="/profile/{{ user.username }}" class="nav-avatar" style="background:{{ user.avatar_color }}">
+        {{ user.username[0].upper() }}
+      </a>
+      <a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i></a>
+    {% else %}
+      <a href="/register" class="nav-btn-login">Sign In</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="page-wrap">
+  {% block content %}{% endblock %}
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

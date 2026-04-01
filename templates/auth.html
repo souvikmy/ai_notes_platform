@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Join NoteVerse{% endblock %}
+{% block content %}
+
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <span class="logo-icon">⚡</span>NoteVerse
+    </div>
+    <h2>The smartest way to share notes.</h2>
+    <div class="auth-features">
+      <div class="af"><i class="fas fa-check-circle"></i> AI-powered summaries</div>
+      <div class="af"><i class="fas fa-check-circle"></i> Chat with any notes</div>
+      <div class="af"><i class="fas fa-check-circle"></i> Follow top students</div>
+      <div class="af"><i class="fas fa-check-circle"></i> Completely free</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabRegister" onclick="showTab('register')">Sign Up</button>
+      <button class="auth-tab" id="tabLogin" onclick="showTab('login')">Log In</button>
+    </div>
+
+    <div id="formRegister" class="auth-form">
+      <h3>Create your account</h3>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="reg-username" placeholder="e.g. physicsgeek99" autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="your@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters"/>
+      </div>
+      <div id="reg-error" class="form-error"></div>
+      <button class="btn-primary full" onclick="register()">Create Account <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div id="formLogin" class="auth-form hidden">
+      <h3>Welcome back</h3>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Your username"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password"/>
+      </div>
+      <div id="login-error" class="form-error"></div>
+      <button class="btn-primary full" onclick="loginUser()">Log In <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function showTab(t) {
+  document.getElementById('formRegister').classList.toggle('hidden', t!=='register');
+  document.getElementById('formLogin').classList.toggle('hidden', t!=='login');
+  document.getElementById('tabRegister').classList.toggle('active', t==='register');
+  document.getElementById('tabLogin').classList.toggle('active', t==='login');
+}
+async function register() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!username || !email || !password) return showError('reg-error','All fields required');
+  const r = await fetch('/register', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})});
+  const d = await r.json();
+  if (d.success) window.location='/feed';
+  else showError('reg-error', d.error);
+}
+async function loginUser() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const r = await fetch('/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+  const d = await r.json();
+  if (d.success) window.location='/feed';
+  else showError('login-error', d.error);
+}
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(()=>el.style.display='none', 3000);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const active = document.querySelector('.auth-form:not(.hidden)');
+    if (active.id === 'formRegister') register();
+    else loginUser();
+  }
+});
+</script>
+{% endblock %}

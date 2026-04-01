@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Upload Notes — NoteVerse{% endblock %}
+{% block content %}
+
+<div class="upload-page">
+  <div class="upload-container">
+    <div class="upload-header">
+      <h1>Upload Notes</h1>
+      <p>Share your knowledge. AI will auto-generate a summary.</p>
+    </div>
+
+    <div class="upload-form">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf" style="display:none" onchange="handleFile(this.files[0])"/>
+        <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <div class="drop-text">Drag & Drop PDF here</div>
+        <div class="drop-sub">or click to browse</div>
+        <div id="fileName" class="file-selected hidden"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Note Title <span class="required">*</span></label>
+          <input type="text" id="noteTitle" placeholder="e.g. Thermodynamics Chapter 3"/>
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <select id="noteSubject">
+            <option>General</option>
+            <option>Mathematics</option>
+            <option>Physics</option>
+            <option>Chemistry</option>
+            <option>Biology</option>
+            <option>Computer Science</option>
+            <option>History</option>
+            <option>Literature</option>
+            <option>Economics</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="noteDesc" rows="3" placeholder="What's in these notes? Help others find them..."></textarea>
+      </div>
+
+      <div id="uploadProgress" class="upload-progress hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <span id="progressText">Uploading...</span>
+      </div>
+
+      <button class="btn-primary full upload-submit" onclick="uploadNotes()" id="uploadBtn">
+        <i class="fas fa-upload"></i> Upload & Generate AI Summary
+      </button>
+    </div>
+
+    <div id="summaryResult" class="summary-result hidden">
+      <div class="sr-header"><i class="fas fa-robot"></i> AI Summary Generated!</div>
+      <div id="summaryText" class="sr-content"></div>
+      <a href="/feed" class="btn-primary">View in Feed <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let selectedFile = null;
+
+function handleFile(file) {
+  if (!file || !file.name.endsWith('.pdf')) return alert('Please select a PDF file');
+  selectedFile = file;
+  const el = document.getElementById('fileName');
+  el.textContent = '✓ ' + file.name + ' (' + (file.size/1024/1024).toFixed(2) + 'MB)';
+  el.classList.remove('hidden');
+  document.getElementById('dropZone').classList.add('has-file');
+}
+
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+async function uploadNotes() {
+  if (!selectedFile) return alert('Please select a PDF file');
+  const title = document.getElementById('noteTitle').value.trim();
+  if (!title) return alert('Please enter a title');
+  const fd = new FormData();
+  fd.append('file', selectedFile);
+  fd.append('title', title);
+  fd.append('description', document.getElementById('noteDesc').value);
+  fd.append('subject', document.getElementById('noteSubject').value);
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+  document.getElementById('uploadProgress').classList.remove('hidden');
+  let prog = 0;
+  const interval = setInterval(() => {
+    prog = Math.min(prog + 10, 85);
+    document.getElementById('progressFill').style.width = prog + '%';
+    document.getElementById('progressText').textContent = prog < 50 ? 'Uploading PDF...' : 'AI generating summary...';
+  }, 400);
+  try {
+    const r = await fetch('/upload', {method:'POST', body:fd});
+    const d = await r.json();
+    clearInterval(interval);
+    document.getElementById('progressFill').style.width = '100%';
+    if (d.success) {
+      document.getElementById('uploadProgress').classList.add('hidden');
+      document.getElementById('summaryResult').classList.remove('hidden');
+      document.getElementById('summaryText').innerHTML = d.summary ? d.summary.replace(/\n/g,'<br>') : 'Notes uploaded successfully!';
+    } else {
+      alert(d.error || 'Upload failed');
+    }
+  } catch(e) { alert('Upload error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-upload"></i> Upload & Generate AI Summary';
+}
+</script>
+{% endblock %}

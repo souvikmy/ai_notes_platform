@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}NoteVerse — AI-Powered Notes for Students{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+    <div class="grid-lines"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge"><span>⚡ AI-Powered</span> Learning Platform</div>
+    <h1 class="hero-title">
+      Share Notes.<br/>
+      <span class="gradient-text">Learn Smarter.</span>
+    </h1>
+    <p class="hero-sub">Upload PDFs, get instant AI summaries, chat with your notes, and connect with students worldwide.</p>
+    <div class="hero-cta">
+      <a href="/register" class="btn-primary">Get Started Free <i class="fas fa-arrow-right"></i></a>
+      <a href="/feed" class="btn-ghost">Browse Notes</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">10K+</span><span class="stat-label">Notes Shared</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">AI</span><span class="stat-label">Summaries</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Students</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="floating-card card1">
+      <div class="card-dot" style="background:#6C63FF"></div>
+      <div>
+        <div class="card-title">Physics Ch.5</div>
+        <div class="card-sub">AI Summary Ready</div>
+      </div>
+      <div class="card-likes"><i class="fas fa-heart"></i> 142</div>
+    </div>
+    <div class="floating-card card2">
+      <div class="card-dot" style="background:#43B89C"></div>
+      <div>
+        <div class="card-title">Calculus Notes</div>
+        <div class="card-sub">Chat with AI</div>
+      </div>
+      <div class="card-likes"><i class="fas fa-heart"></i> 89</div>
+    </div>
+    <div class="floating-card card3">
+      <i class="fas fa-robot" style="color:#F7B731;font-size:1.5rem"></i>
+      <div>
+        <div class="card-title">AI is analyzing...</div>
+        <div class="card-sub">Generating summary</div>
+      </div>
+    </div>
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="phone-header">
+          <span style="font-size:0.6rem;font-weight:700;color:#6C63FF">NoteVerse</span>
+        </div>
+        <div class="phone-note" style="border-left:3px solid #6C63FF">
+          <div class="pn-title">Organic Chemistry</div>
+          <div class="pn-bar"></div>
+          <div class="pn-bar short"></div>
+        </div>
+        <div class="phone-note" style="border-left:3px solid #43B89C">
+          <div class="pn-title">Data Structures</div>
+          <div class="pn-bar"></div>
+        </div>
+        <div class="phone-chat">
+          <div class="chat-bubble">What is Big O?</div>
+          <div class="chat-bubble ai">Big O describes algorithm time complexity...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="section-label">What makes us different</div>
+  <h2 class="section-title">Every feature a student needs</h2>
+  <div class="features-grid">
+    <div class="feature-card feat-ai">
+      <div class="feat-icon"><i class="fas fa-robot"></i></div>
+      <h3>AI Auto-Summary</h3>
+      <p>Upload any PDF and get an instant bullet-point summary powered by Claude AI — no reading required.</p>
+      <div class="feat-tag">🔥 Most Popular</div>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon"><i class="fas fa-comments"></i></div>
+      <h3>Chat With Notes</h3>
+      <p>Ask your notes anything. Our AI tutor answers questions directly from the content of any PDF.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon"><i class="fas fa-search-plus"></i></div>
+      <h3>Smart Search</h3>
+      <p>AI understands what you mean, not just what you type. Find the perfect notes instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon"><i class="fas fa-user-friends"></i></div>
+      <h3>Follow & Connect</h3>
+      <p>Follow top students, like notes, comment and build your academic network — like Instagram for learning.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+      <h3>PDF Upload</h3>
+      <p>Drag & drop any PDF. We handle storage, preview, and AI processing automatically.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon"><i class="fas fa-bolt"></i></div>
+      <h3>Lightning Fast</h3>
+      <p>Built to handle thousands of students at once. Infinite scroll, optimized queries, fast as ⚡.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>Ready to study smarter?</h2>
+    <p>Join thousands of students already using NoteVerse.</p>
+    <a href="/register" class="btn-primary large">Create Free Account <i class="fas fa-arrow-right"></i></a>
+  </div>
+</section>
+
+{% endblock %}

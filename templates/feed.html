@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Feed — NoteVerse{% endblock %}
+{% block content %}
+
+<div class="feed-layout">
+  <aside class="feed-sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" style="background:{{ user.avatar_color }}">{{ user.username[0].upper() }}</div>
+      <div>
+        <div class="sidebar-username">{{ user.username }}</div>
+        <a href="/profile/{{ user.username }}" class="sidebar-link">View Profile</a>
+      </div>
+    </div>
+    <div class="sidebar-filters">
+      <div class="filter-label">Browse by Subject</div>
+      <button class="filter-btn active" onclick="setSubject('')">All Notes</button>
+      <button class="filter-btn" onclick="setSubject('Mathematics')">📐 Mathematics</button>
+      <button class="filter-btn" onclick="setSubject('Physics')">⚛️ Physics</button>
+      <button class="filter-btn" onclick="setSubject('Chemistry')">🧪 Chemistry</button>
+      <button class="filter-btn" onclick="setSubject('Biology')">🧬 Biology</button>
+      <button class="filter-btn" onclick="setSubject('Computer Science')">💻 CS</button>
+      <button class="filter-btn" onclick="setSubject('History')">📜 History</button>
+      <button class="filter-btn" onclick="setSubject('Literature')">📖 Literature</button>
+      <button class="filter-btn" onclick="setSubject('General')">📁 General</button>
+    </div>
+    <a href="/upload" class="upload-cta-btn">
+      <i class="fas fa-plus"></i> Upload New Notes
+    </a>
+  </aside>
+
+  <main class="feed-main">
+    <div class="feed-topbar">
+      <h2 class="feed-title">Discover Notes</h2>
+      <div class="feed-search-bar">
+        <input type="text" id="feedSearch" placeholder="Search notes..." oninput="debounceSearch()"/>
+        <button class="ai-search-btn" onclick="runSmartSearch()">
+          <i class="fas fa-robot"></i> AI Search
+        </button>
+      </div>
+    </div>
+    <div id="aiSearchBadge" class="ai-search-badge hidden">
+      <i class="fas fa-robot"></i> AI Smart Search Results
+      <button onclick="clearSmartSearch()">✕ Show All</button>
+    </div>
+    <div id="notesGrid" class="notes-grid"></div>
+    <div id="loadMore" class="load-more">
+      <button onclick="loadNotes()">Load More Notes</button>
+    </div>
+    <div id="emptyState" class="empty-state hidden">
+      <i class="fas fa-search"></i>
+      <p>No notes found. Be the first to upload!</p>
+      <a href="/upload" class="btn-primary">Upload Notes</a>
+    </div>
+  </main>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let page = 1, loading = false, subject = '', searchQuery = '', aiMode = false;
+
+function noteCard(n) {
+  const initials = n.username[0].toUpperCase();
+  return `
+  <div class="note-card" onclick="window.location='/note/${n.id}'">
+    <div class="note-card-header">
+      <div class="note-avatar" style="background:${n.avatar_color}">${initials}</div>
+      <div class="note-meta">
+        <span class="note-author">${n.username}</span>
+        <span class="note-date">${timeAgo(n.created_at)}</span>
+      </div>
+      <span class="note-subject-tag">${n.subject || 'General'}</span>
+    </div>
+    <h3 class="note-title">${n.title}</h3>
+    ${n.description ? `<p class="note-desc">${n.description.substring(0,80)}${n.description.length>80?'...':''}</p>` : ''}
+    ${n.summary ? `<div class="note-summary-preview"><i class="fas fa-robot"></i> AI Summary available</div>` : ''}
+    <div class="note-footer">
+      <span class="note-stat"><i class="fas fa-heart ${n.user_liked?'liked':''}"></i> ${n.like_count}</span>
+      <span class="note-stat"><i class="fas fa-comment"></i> ${n.comment_count}</span>
+      <span class="note-stat"><i class="fas fa-eye"></i> ${n.views}</span>
+      <span class="note-pdf-badge"><i class="fas fa-file-pdf"></i> PDF</span>
+    </div>
+  </div>`;
+}
+
+async function loadNotes(reset=false) {
+  if (loading) return;
+  loading = true;
+  if (reset) { page=1; document.getElementById('notesGrid').innerHTML=''; }
+  const params = new URLSearchParams({page, search: searchQuery, subject});
+  const res = await fetch(`/api/feed?${params}`);
+  const notes = await res.json();
+  const grid = document.getElementById('notesGrid');
+  if (notes.length === 0 && page === 1) {
+    document.getElementById('emptyState').classList.remove('hidden');
+    document.getElementById('loadMore').classList.add('hidden');
+  } else {
+    document.getElementById('emptyState').classList.add('hidden');
+    notes.forEach(n => grid.insertAdjacentHTML('beforeend', noteCard(n)));
+    document.getElementById('loadMore').classList.toggle('hidden', notes.length < 12);
+    page++;
+  }
+  loading = false;
+}
+
+function setSubject(s) {
+  subject = s;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  aiMode = false;
+  document.getElementById('aiSearchBadge').classList.add('hidden');
+  loadNotes(true);
+}
+
+let searchTimer;
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchQuery = document.getElementById('feedSearch').value;
+  searchTimer = setTimeout(() => loadNotes(true), 400);
+}
+
+async function runSmartSearch() {
+  const q = document.getElementById('feedSearch').value.trim();
+  if (!q) return;
+  const badge = document.getElementById('aiSearchBadge');
+  badge.classList.remove('hidden');
+  badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI is thinking...';
+  const res = await fetch(`/api/ai/smart-search?q=${encodeURIComponent(q)}`);
+  const notes = await res.json();
+  const grid = document.getElementById('notesGrid');
+  grid.innerHTML = '';
+  badge.innerHTML = `<i class="fas fa-robot"></i> AI Smart Search: "${q}" <button onclick="clearSmartSearch()">✕ Show All</button>`;
+  if (notes.length === 0) grid.innerHTML = '<p style="padding:2rem;color:var(--muted)">No AI matches found</p>';
+  notes.forEach(n => grid.insertAdjacentHTML('beforeend', noteCard(n)));
+  document.getElementById('loadMore').classList.add('hidden');
+}
+
+function clearSmartSearch() {
+  aiMode = false;
+  document.getElementById('feedSearch').value = '';
+  searchQuery = '';
+  document.getElementById('aiSearchBadge').classList.add('hidden');
+  loadNotes(true);
+}
+
+function timeAgo(dt) {
+  const d = new Date(dt), now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+loadNotes();
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }} — NoteVerse{% endblock %}
+{% block content %}
+
+<div class="profile-page">
+  <div class="profile-cover"></div>
+  <div class="profile-card">
+    <div class="profile-avatar" style="background:{{ profile_user.avatar_color }}">
+      {{ profile_user.username[0].upper() }}
+    </div>
+    <div class="profile-info">
+      <h2 class="profile-username">{{ profile_user.username }}</h2>
+      {% if profile_user.bio %}
+      <p class="profile-bio">{{ profile_user.bio }}</p>
+      {% endif %}
+      <div class="profile-stats">
+        <div class="ps"><span class="ps-num">{{ notes|length }}</span><span class="ps-label">Notes</span></div>
+        <div class="ps"><span class="ps-num" id="followerCount">{{ followers }}</span><span class="ps-label">Followers</span></div>
+        <div class="ps"><span class="ps-num">{{ following }}</span><span class="ps-label">Following</span></div>
+      </div>
+      <div class="profile-joined">Joined {{ profile_user.created_at[:10] }}</div>
+    </div>
+    {% if user and user.id != profile_user.id %}
+    <button class="follow-btn {% if is_following %}following{% endif %}" id="followBtn"
+            onclick="toggleFollow({{ profile_user.id }})">
+      {% if is_following %}<i class="fas fa-check"></i> Following{% else %}<i class="fas fa-plus"></i> Follow{% endif %}
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="profile-notes-section">
+    <h3><i class="fas fa-file-pdf"></i> Notes by {{ profile_user.username }}</h3>
+    {% if notes %}
+    <div class="profile-notes-grid">
+      {% for note in notes %}
+      <a href="/note/{{ note.id }}" class="profile-note-card">
+        <div class="pnc-icon"><i class="fas fa-file-pdf"></i></div>
+        <div class="pnc-info">
+          <div class="pnc-title">{{ note.title }}</div>
+          <div class="pnc-meta">
+            <span class="note-subject-tag small">{{ note.subject }}</span>
+            <span><i class="fas fa-heart"></i> {{ note.like_count }}</span>
+            <span><i class="fas fa-eye"></i> {{ note.views }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-book-open"></i>
+      <p>No notes uploaded yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+async function toggleFollow(uid) {
+  const r = await fetch(`/api/follow/${uid}`, {method:'POST'});
+  const d = await r.json();
+  const btn = document.getElementById('followBtn');
+  document.getElementById('followerCount').textContent = d.count;
+  if (d.following) {
+    btn.innerHTML = '<i class="fas fa-check"></i> Following';
+    btn.classList.add('following');
+  } else {
+    btn.innerHTML = '<i class="fas fa-plus"></i> Follow';
+    btn.classList.remove('following');
+  }
+}
+</script>
+{% endblock %}
