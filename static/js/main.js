@@ -107,3 +107,25 @@ window.addEventListener('scroll', () => {
   const nav = document.querySelector('.navbar');
   if (nav) nav.style.borderBottomColor = window.scrollY > 10 ? 'var(--border)' : 'transparent';
 });
+
+function deleteNote(noteId) {
+    if (!confirm("Are you sure you want to delete this note?")) return;
+
+    fetch(`/api/delete/${noteId}`, {
+        method: "POST"
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Deleted successfully!");
+
+            // Remove from UI (no reload needed)
+            document.getElementById(`note-${noteId}`).remove();
+        } else {
+            alert(data.error || "Error deleting note");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+}
